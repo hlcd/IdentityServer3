@@ -16,7 +16,7 @@
 
 namespace Thinktecture.IdentityServer.Core.Configuration.Hosting
 {
-    internal class DataProtectorAdapter : Microsoft.Owin.Security.DataProtection.IDataProtector
+    public class DataProtectorAdapter : Microsoft.Owin.Security.DataProtection.IDataProtector
     {
         private readonly IDataProtector _idsrvProtector;
         private readonly string _entropy;
