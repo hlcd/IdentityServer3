@@ -51,29 +51,37 @@ namespace Thinktecture.IdentityServer.Core.Validation
         {
             Logger.Info("Start client validation");
 
-            // validate client credentials on the wire
             var credential = ValidateHttpRequest(header, parameters);
-
-            if (credential.IsMalformed || !credential.IsPresent)
+            while (true)
             {
-                LogError("No or malformed client credential found.");
-                return null;
+                // validate client credentials on the wire
+                if (credential.IsMalformed || !credential.IsPresent)
+                {
+                    LogError("No or malformed client credential found.");
+                    return null;
+                }
+
+                _log.ClientId = credential.ClientId;
+                _log.ClientCredentialType = credential.Type;
+
+                // validate client against configuration store
+                var client = await ValidateClientCredentialsAsync(credential);
+                if (client == null)
+                {
+                    var postCredentials = ParsePostBody(parameters);
+                    if (postCredentials.ClientId != credential.ClientId)
+                    {
+                        credential = postCredentials;
+                        continue;
+                    }
+                    return null;
+                }
+
+                _log.ClientName = client.ClientName;
+
+                LogSuccess();
+                return client;
             }
-
-            _log.ClientId = credential.ClientId;
-            _log.ClientCredentialType = credential.Type;
-
-            // validate client against configuration store
-            var client = await ValidateClientCredentialsAsync(credential);
-            if (client == null)
-            {
-                return null;
-            }
-
-            _log.ClientName = client.ClientName;
-
-            LogSuccess();
-            return client;
         }
 
         public ClientCredential ValidateHttpRequest(AuthenticationHeaderValue header, NameValueCollection body)
