@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Thinktecture.IdentityServer.Core.Extensions;
@@ -59,6 +60,19 @@ namespace Thinktecture.IdentityServer.Core.Validation
                     Token = authorizationHeader.Parameter,
                     UsageType = BearerTokenUsageType.AuthorizationHeader
                 };
+            }
+            else if (request.Headers.Contains("X-Authorization-Bearer"))
+            {
+                var altHeader = request.Headers.GetValues("X-Authorization-Bearer");
+                if (altHeader != null)
+                {
+                    return new BearerTokenUsageValidationResult
+                    {
+                        TokenFound = true,
+                        Token = altHeader.FirstOrDefault(),
+                        UsageType = BearerTokenUsageType.AuthorizationHeader
+                    };
+                }
             }
 
             return new BearerTokenUsageValidationResult();
