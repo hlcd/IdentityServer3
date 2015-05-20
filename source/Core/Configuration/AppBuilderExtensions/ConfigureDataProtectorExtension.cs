@@ -21,7 +21,7 @@ using Thinktecture.IdentityServer.Core.Configuration.Hosting;
 
 namespace Owin
 {
-    internal static class ConfigureDataProtectorExtension
+    public static class ConfigureDataProtectorExtension
     {
         public static IAppBuilder ConfigureDataProtectionProvider(this IAppBuilder app, IdentityServerOptions options)
         {
