@@ -21,6 +21,7 @@ using Microsoft.Owin.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Thinktecture.IdentityServer.Core.Configuration;
@@ -106,6 +107,19 @@ namespace Thinktecture.IdentityServer.Core.Extensions
             var id = cookie.Write(message);
 
             var url = env.GetIdentityServerBaseUrl() + Constants.RoutePaths.Login;
+            if (!string.IsNullOrEmpty(options.LoginPage))
+            {
+                if (options.LoginPage.StartsWith("/"))
+                {
+                    var urib = new UriBuilder(url);
+                    urib.Path = options.LoginPage;
+                    url = urib.ToString();
+                }
+                else
+                {
+                    url = options.LoginPage;
+                }
+            }
             var uri = new Uri(url.AddQueryString("signin=" + id));
 
             return uri.AbsoluteUri;

@@ -223,5 +223,7 @@ namespace Thinktecture.IdentityServer.Core.Configuration
                 return keys;
             }
         }
+
+        public string LoginPage { get; set; }
     }
 }
