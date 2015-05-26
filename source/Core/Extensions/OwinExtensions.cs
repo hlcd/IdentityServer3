@@ -20,10 +20,12 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web;
 using Thinktecture.IdentityServer.Core.Configuration;
 using Thinktecture.IdentityServer.Core.Configuration.Hosting;
 using Thinktecture.IdentityServer.Core.Models;
@@ -119,6 +121,7 @@ namespace Thinktecture.IdentityServer.Core.Extensions
                 {
                     url = options.LoginPage;
                 }
+                url = url.AddQueryString("returnUrl=" + HttpUtility.UrlEncode(message.ReturnUrl));
             }
             var uri = new Uri(url.AddQueryString("signin=" + id));
 
@@ -206,6 +209,27 @@ namespace Thinktecture.IdentityServer.Core.Extensions
             if (string.IsNullOrEmpty(id)) throw new ArgumentNullException("id");
 
             var options = env.ResolveDependency<IdentityServerOptions>();
+            var cookie = new MessageCookie<SignInMessage>(env, options);
+
+            return cookie.Read(id);
+        }
+
+        /// <summary>
+        /// Gets the sign in message.
+        /// </summary>
+        /// <param name="env">The OWIN environment.</param>
+        /// <param name="id">The signin identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// env
+        /// or
+        /// id
+        /// </exception>
+        public static SignInMessage GetSignInMessage(this IDictionary<string, object> env, IdentityServerOptions options, string id)
+        {
+            if (env == null) throw new ArgumentNullException("env");
+            if (string.IsNullOrEmpty(id)) throw new ArgumentNullException("id");
+
             var cookie = new MessageCookie<SignInMessage>(env, options);
 
             return cookie.Read(id);
