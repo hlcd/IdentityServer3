@@ -227,22 +227,27 @@ namespace Thinktecture.IdentityServer.Core.Validation
             // validate redirect_uri
             /////////////////////////////////////////////
             var redirectUri = parameters.Get(Constants.TokenRequest.RedirectUri);
-            if (redirectUri.IsMissing())
+
+            if (!_options.IgnoreTokenCallback)
             {
-                var error = "Redirect URI is missing.";
-                LogError(error);
-                RaiseFailedAuthorizationCodeRedeemedEvent(code, error);
+                if (redirectUri.IsMissing())
+                {
+                    var error = "Redirect URI is missing.";
+                    LogError(error);
+                    RaiseFailedAuthorizationCodeRedeemedEvent(code, error);
 
-                return Invalid(Constants.TokenErrors.UnauthorizedClient);
-            }
+                    return Invalid(Constants.TokenErrors.UnauthorizedClient);
+                }
 
-            if (redirectUri.Equals(_validatedRequest.AuthorizationCode.RedirectUri, StringComparison.Ordinal) == false)
-            {
-                var error = "Invalid redirect_uri: " + redirectUri;
-                LogError(error);
-                RaiseFailedAuthorizationCodeRedeemedEvent(code, error);
+                if (redirectUri.Equals(_validatedRequest.AuthorizationCode.RedirectUri, StringComparison.Ordinal) ==
+                    false)
+                {
+                    var error = "Invalid redirect_uri: " + redirectUri;
+                    LogError(error);
+                    RaiseFailedAuthorizationCodeRedeemedEvent(code, error);
 
-                return Invalid(Constants.TokenErrors.UnauthorizedClient);
+                    return Invalid(Constants.TokenErrors.UnauthorizedClient);
+                }
             }
 
             /////////////////////////////////////////////
