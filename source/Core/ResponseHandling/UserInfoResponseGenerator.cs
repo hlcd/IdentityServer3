@@ -39,14 +39,15 @@ namespace Thinktecture.IdentityServer.Core.ResponseHandling
             _scopes = scopes;
         }
 
-        public async Task<Dictionary<string, object>> ProcessAsync(string subject, IEnumerable<string> scopes)
+        public async Task<Dictionary<string, object>> ProcessAsync(string subject, IEnumerable<string> scopes, IEnumerable<Claim> claims)
         {
             Logger.Info("Creating userinfo response");
             var profileData = new Dictionary<string, object>();
             
             var requestedClaimTypes = await GetRequestedClaimTypesAsync(scopes);
-            var principal = Principal.Create("UserInfo", new Claim("sub", subject));
-
+            
+            var principal = Principal.Create("UserInfo", claims.ToArray()/*new Claim("sub", subject)*/);
+            
             IEnumerable<Claim> profileClaims;
             if (requestedClaimTypes.IncludeAllClaims)
             {
