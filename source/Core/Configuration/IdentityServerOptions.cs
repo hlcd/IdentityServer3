@@ -226,5 +226,6 @@ namespace Thinktecture.IdentityServer.Core.Configuration
 
         public string LoginPage { get; set; }
         public bool IgnoreTokenCallback { get; set; }
+        public bool IgnoreTokenLifetime { get; set; }
     }
 }

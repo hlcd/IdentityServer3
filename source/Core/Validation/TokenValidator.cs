@@ -240,13 +240,8 @@ namespace Thinktecture.IdentityServer.Core.Validation
                 return Invalid(Constants.ProtectedResourceErrors.InvalidToken);
             }
 
-            if (DateTimeOffsetHelper.UtcNow >= token.CreationTime.AddSeconds(token.Lifetime))
-            {
-                LogError("Token expired.");
-
-                await _tokenHandles.RemoveAsync(tokenHandle);
-                return Invalid(Constants.ProtectedResourceErrors.ExpiredToken);
-            }
+            var r = await ValidateTokenLifetime(tokenHandle, token);
+            if (r != null) return r;
 
             return new TokenValidationResult
             {
@@ -256,6 +251,30 @@ namespace Thinktecture.IdentityServer.Core.Validation
             };
         }
 
+
+        protected virtual async Task<TokenValidationResult> ValidateTokenLifetime(string tokenHandle, Token token)
+        {
+            if (DateTimeOffsetHelper.UtcNow >= token.CreationTime.AddSeconds(token.Lifetime))
+            {
+
+
+                if (_options.IgnoreTokenLifetime)
+                {
+                    Logger.Warn("Token expired but IgnoreTokenLifetime=true. ignoring");
+                    return null;
+                }
+                else
+                {
+                    LogError("Token expired.");
+                    await _tokenHandles.RemoveAsync(tokenHandle);
+                    return Invalid(Constants.ProtectedResourceErrors.ExpiredToken);
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
         protected virtual IEnumerable<Claim> ReferenceTokenToClaims(Token token)
         {
             var claims = new List<Claim>
